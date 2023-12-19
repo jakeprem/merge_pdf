@@ -2,7 +2,7 @@ defmodule MergePdf.MixProject do
   use Mix.Project
 
   # Used by CI/CD, so make sure this is updated
-  @version "0.1.0"
+  @version "0.0.1"
   @source_url "https://github.com/jakeprem/merge_pdf"
 
   def project do
