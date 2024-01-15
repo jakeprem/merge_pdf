@@ -1,7 +1,7 @@
 [package]
 name = "mergepdf_native"
-version = "0.2.0"
-authors = []
+version = "0.3.0"
+authors = ["Jake Prem"]
 edition = "2021"
 
 [lib]
