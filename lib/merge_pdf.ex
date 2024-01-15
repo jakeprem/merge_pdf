@@ -17,5 +17,6 @@ defmodule MergePdf do
   - `binaries` - A list of binaries containing PDF data.
   """
   def merge_binaries([]), do: {:error, "No binaries given"}
+  def merge_binaries([binary]), do: binary
   defdelegate merge_binaries(binaries), to: MergePdf.Native
 end

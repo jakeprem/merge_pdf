@@ -2,7 +2,7 @@ defmodule MergePdf.MixProject do
   use Mix.Project
 
   # Used by CI/CD, so make sure this is updated
-  @version "0.0.2"
+  @version "0.2.0-dev"
   @source_url "https://github.com/jakeprem/merge_pdf"
   @dev? String.ends_with?(@version, "-dev")
   @force_build? System.get_env("MERGE_PDF_BUILD") in ["1", "true"]
@@ -53,7 +53,6 @@ defmodule MergePdf.MixProject do
 
   defp docs do
     [
-      main: "Merge PDF",
       source_ref: "v#{@version}",
       source_url: @source_url
     ]

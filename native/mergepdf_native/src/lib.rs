@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, io::Cursor};
 
-use lopdf::{Bookmark, Document, Object, ObjectId};
+use lopdf::{Document, Object, ObjectId};
 
 use rustler::{Binary, NewBinary, OwnedBinary};
 
@@ -86,17 +86,16 @@ fn merge_documents(documents: Vec<Document>) -> Result<Cursor<Vec<u8>>, Error> {
                 .into_iter()
                 .map(|(_, object_id)| {
                     if !first {
-                        let bookmark = Bookmark::new(
-                            String::from(format!("Page_{}", pagenum)),
-                            [0.0, 0.0, 1.0],
-                            0,
-                            object_id,
-                        );
-                        document.add_bookmark(bookmark, None);
+                        // let bookmark = Bookmark::new(
+                        //     String::from(format!("Page_{}", pagenum)),
+                        //     [0.0, 0.0, 1.0],
+                        //     0,
+                        //     object_id,
+                        // );
+                        // document.add_bookmark(bookmark, None);
                         first = true;
                         pagenum += 1;
                     }
-
                     (object_id, doc.get_object(object_id).unwrap().to_owned())
                 })
                 .collect::<BTreeMap<ObjectId, Object>>(),
