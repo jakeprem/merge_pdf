@@ -18,8 +18,8 @@ impl From<lopdf::Error> for Error {
 impl rustler::Encoder for Error {
     fn encode<'a>(&self, env: rustler::Env<'a>) -> rustler::Term<'a> {
         let msg = match self {
-            Error::Lopdf(_err) => "lopdf error",
-            Error::Merge(err) => err,
+            Error::Lopdf(err) => err.to_string(),
+            Error::Merge(err) => err.to_string(),
         };
 
         let mut msg_binary = NewBinary::new(env, msg.len());
