@@ -111,7 +111,13 @@ fn merge_documents(documents: Vec<Document>) -> Result<Cursor<Vec<u8>>, Error> {
     for (object_id, object) in documents_objects.iter() {
         // We have to ignore "Page" (as are processed later), "Outlines" and "Outline" objects
         // All other objects should be collected and inserted into the main Document
-        match object.type_name().unwrap_or("") {
+
+        let type_name = object
+            .type_name()
+            .map(|s| String::from_utf8_lossy(s).into_owned())
+            .unwrap_or(String::from(""));
+
+        match type_name.as_str() {
             "Catalog" => {
                 // Collect a first "Catalog" object and use it for the future "Pages"
                 catalog_object = Some((

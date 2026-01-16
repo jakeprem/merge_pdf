@@ -2,7 +2,7 @@ defmodule MergePdf.MixProject do
   use Mix.Project
 
   # Used by CI/CD, so make sure this is updated
-  @version "0.4.0"
+  @version "0.5.0"
   @source_url "https://github.com/jakeprem/merge_pdf"
   @dev? String.ends_with?(@version, "-dev")
   @force_build? System.get_env("MERGE_PDF_BUILD") in ["1", "true"]
@@ -43,8 +43,8 @@ defmodule MergePdf.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:rustler_precompiled, "~> 0.7"},
-      {:rustler, "~> 0.30.0", optional: not (@dev? or @force_build?)},
+      {:rustler_precompiled, "~> 0.8.3"},
+      {:rustler, "~> 0.36.2", optional: not (@dev? or @force_build?)},
 
       # Dev
       {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}

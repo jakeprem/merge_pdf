@@ -1,6 +1,6 @@
 [package]
 name = "mergepdf_native"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Jake Prem"]
 edition = "2021"
 
@@ -15,4 +15,4 @@ rustler = { version = "0.30.0", default-features = false, features = [
     "nif_version_2_15",
 ] }
 # lopdf = { path = "../../lopdf" }
-lopdf = "0.32.0"
+lopdf = "0.36.0"
