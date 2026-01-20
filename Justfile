@@ -116,11 +116,88 @@ download-checksums:
 
 # Verify hex package contents
 verify-package:
-    mix hex.build --unpack
-    @echo "Check the unpacked directory for correct contents"
+    #!/usr/bin/env bash
+    set -euo pipefail
 
-# Publish to hex.pm
+    echo "Building hex package..."
+    mix hex.build --unpack
+
+    # Find the unpacked directory
+    PKG_DIR=$(ls -d merge_pdf-* 2>/dev/null | head -1)
+    if [ -z "$PKG_DIR" ]; then
+        echo "Error: No unpacked package directory found"
+        exit 1
+    fi
+
+    echo ""
+    echo "=== Package contents ==="
+    find "$PKG_DIR" -type f | sort
+    echo ""
+
+    echo "=== Verifying required files ==="
+    MISSING=0
+
+    # Check for checksum file
+    if ls "$PKG_DIR"/checksum-*.exs 1>/dev/null 2>&1; then
+        echo "✓ Checksum file found"
+    else
+        echo "✗ ERROR: No checksum file (checksum-*.exs) - did you run 'just download-checksums'?"
+        MISSING=1
+    fi
+
+    # Check for mix.exs
+    if [ -f "$PKG_DIR/mix.exs" ]; then
+        echo "✓ mix.exs found"
+    else
+        echo "✗ ERROR: mix.exs missing"
+        MISSING=1
+    fi
+
+    # Check for lib directory
+    if [ -d "$PKG_DIR/lib" ]; then
+        echo "✓ lib/ directory found"
+    else
+        echo "✗ ERROR: lib/ directory missing"
+        MISSING=1
+    fi
+
+    # Check for native directory
+    if [ -d "$PKG_DIR/native" ]; then
+        echo "✓ native/ directory found"
+    else
+        echo "✗ ERROR: native/ directory missing"
+        MISSING=1
+    fi
+
+    echo ""
+    if [ $MISSING -eq 1 ]; then
+        echo "=== VERIFICATION FAILED ==="
+        exit 1
+    else
+        echo "=== VERIFICATION PASSED ==="
+        echo "Package is ready to publish."
+    fi
+
+# Publish to hex.pm (fails on any uncommitted changes except checksum file)
 publish:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    # Check for uncommitted changes to tracked files (ignore untracked checksum file)
+    if [ -n "$(git status --porcelain | grep -v '^?? checksum-')" ]; then
+        echo "Error: You have uncommitted changes to tracked files:"
+        git status --short | grep -v '^?? checksum-'
+        echo ""
+        echo "Commit or stash changes before publishing."
+        exit 1
+    fi
+
+    # Verify checksum file exists
+    if ! ls checksum-*.exs 1>/dev/null 2>&1; then
+        echo "Error: No checksum file found. Run 'just download-checksums' first."
+        exit 1
+    fi
+
     mix hex.publish
 
 # Check current version
