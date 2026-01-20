@@ -1,8 +1,70 @@
-# MergePdf Release Automation
+# MergePdf Development & Release Automation
+#
+# DEVELOPMENT WORKFLOW (new contributors):
+#   just setup          # First-time setup, builds NIF from source
+#   just build          # Rebuild NIF from source after changes
+#   just test           # Run tests
+#
+# RELEASE WORKFLOW (maintainers):
+#   just bump-version X.Y.Z   # 1. Update version numbers
+#   just verify-local         # 2. Verify everything builds and tests pass
+#   # review and commit your changes
+#   just tag X.Y.Z            # 3. Create git tag
+#   just push-release         # 4. Push to GitHub (triggers CI)
+#   # ... wait for CI to complete ...
+#   just download-checksums   # 5. Download checksums from release
+#   just verify-package       # 6. Verify hex package contents
+#   just publish              # 7. Publish to hex.pm
 
 # Default recipe
 default:
     @just --list
+
+# =============================================================================
+# DEVELOPMENT COMMANDS
+# =============================================================================
+
+# First-time setup for new contributors (builds NIF from source)
+setup:
+    @echo "Setting up development environment..."
+    @echo "This will build the Rust NIF from source (requires Rust toolchain)"
+    rm -rf _build deps
+    MERGE_PDF_BUILD=true mix deps.get
+    MERGE_PDF_BUILD=true mix compile
+    @echo ""
+    @echo "Setup complete! You can now run: just test"
+
+# Build NIF from source
+build:
+    MERGE_PDF_BUILD=true mix compile
+
+# Run tests (builds from source if needed)
+test:
+    MERGE_PDF_BUILD=true mix test
+
+# =============================================================================
+# PRE-RELEASE VERIFICATION
+# =============================================================================
+
+# Verify local build before release (clean build + tests)
+verify-local:
+    @echo "=== Pre-release verification ==="
+    @echo "Cleaning build artifacts..."
+    rm -rf _build deps
+    @echo ""
+    @echo "Building from source..."
+    MERGE_PDF_BUILD=true mix deps.get
+    MERGE_PDF_BUILD=true mix compile
+    @echo ""
+    @echo "Running tests..."
+    MERGE_PDF_BUILD=true mix test
+    @echo ""
+    @echo "=== Verification passed ==="
+    @echo "You can now commit and tag the release."
+
+# =============================================================================
+# RELEASE COMMANDS
+# =============================================================================
 
 # Bump version in mix.exs and Cargo.toml (Linux)
 [linux]
@@ -20,10 +82,27 @@ bump-version version:
     sed -i '' 's/^version = "[^"]*"/version = "{{version}}"/' native/mergepdf_native/Cargo.toml
     @echo "Version bumped. Please verify changes with: git diff"
 
-# Create release commit and tag
+# Create release tag (requires clean working directory)
 tag version:
-    git add -A
-    git commit -m "Release v{{version}}"
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    # Check for any uncommitted changes (staged or unstaged)
+    if [ -n "$(git status --porcelain)" ]; then
+        echo "Error: You have uncommitted changes:"
+        git status --short
+        echo ""
+        echo "Please commit your changes first, then run this command again."
+        echo "Or use 'just tag-force {{version}}' to tag the current commit anyway"
+        echo "(uncommitted changes will NOT be included in the tagged commit)."
+        exit 1
+    fi
+
+    git tag "v{{version}}"
+    echo "Created tag v{{version}}. Push with: just push-release"
+
+# Create release tag, ignoring uncommitted changes
+tag-force version:
     git tag "v{{version}}"
     @echo "Created tag v{{version}}. Push with: just push-release"
 
@@ -43,29 +122,6 @@ verify-package:
 # Publish to hex.pm
 publish:
     mix hex.publish
-
-# Full release workflow (interactive)
-release version:
-    @echo "=== Release Workflow for v{{version}} ==="
-    @echo ""
-    @echo "Step 1: Bumping version..."
-    just bump-version {{version}}
-    @echo ""
-    @echo "Step 2: Review changes, then run:"
-    @echo "  just tag {{version}}"
-    @echo "  just push-release"
-    @echo ""
-    @echo "Step 3: Wait for GitHub Actions to complete"
-    @echo "  https://github.com/jakeprem/merge_pdf/actions"
-    @echo ""
-    @echo "Step 4: After CI completes, run:"
-    @echo "  just download-checksums"
-    @echo ""
-    @echo "Step 5: Verify package:"
-    @echo "  just verify-package"
-    @echo ""
-    @echo "Step 6: Publish:"
-    @echo "  just publish"
 
 # Check current version
 version:

@@ -25,54 +25,104 @@ be found at <https://hexdocs.pm/merge_pdf>.
 
 ## Development
 
-To build the NIF from source (instead of using precompiled binaries):
+This project uses [RustlerPrecompiled](https://hexdocs.pm/rustler_precompiled) to distribute precompiled native binaries. For development, you'll build the Rust NIF from source.
+
+### Prerequisites
+
+- Elixir 1.15+
+- Rust toolchain via [rustup](https://rustup.rs/)
+- [just](https://github.com/casey/just) command runner
+
+### First-Time Setup
 
 ```bash
-# Set environment variable to force local build
-export MERGE_PDF_BUILD=true
-mix deps.get
-mix compile
+just setup
 ```
 
-Requires Rust toolchain installed via [rustup](https://rustup.rs/).
+This cleans any stale artifacts and builds the NIF from source. Run this when:
+- You first clone the repo
+- You switch branches with native code changes
+- You get precompilation-related errors
+
+### Day-to-Day Development
+
+```bash
+just build    # Rebuild NIF after Rust changes
+just test     # Run tests
+```
+
+All development commands use `MERGE_PDF_BUILD=true` internally to force building from source rather than downloading precompiled binaries.
 
 ## Release Process (Maintainers)
 
-This project uses [RustlerPrecompiled](https://hexdocs.pm/rustler_precompiled) with GitHub Actions to build binaries for 9 platforms.
+This project builds precompiled binaries for 9 platforms via GitHub Actions. The release process has two phases: **before CI** (local verification) and **after CI** (publishing).
 
 ### Prerequisites
 
 1. Authenticate with Hex.pm: `mix hex.user auth`
 2. Ensure GitHub Actions has write permissions (Settings > Actions > General)
 
-### Steps
+### Phase 1: Before CI (Local Verification)
 
-1. **Bump version** in `mix.exs` and `native/mergepdf_native/Cargo.toml`:
-   ```bash
-   just bump-version X.Y.Z
-   ```
+These steps verify everything works before creating a release.
 
-2. **Commit and tag**:
-   ```bash
-   just tag X.Y.Z
-   just push-release
-   ```
+```bash
+# 1. Bump version in mix.exs and Cargo.toml
+just bump-version X.Y.Z
 
-3. **Wait for CI** - All 9 platform builds must complete on [GitHub Actions](https://github.com/jakeprem/merge_pdf/actions)
+# 2. Verify everything builds and tests pass
+#    (This does a clean build from source - catches Rust compilation errors)
+just verify-local
 
-4. **Generate checksums** (after CI completes):
-   ```bash
-   just download-checksums
-   ```
+# 3. Review and commit the version bump
+git diff
+git add -p
+git commit
 
-5. **Verify and publish**:
-   ```bash
-   just verify-package
-   just publish
-   ```
+# 4. Create the git tag
+just tag X.Y.Z
 
-### Justfile Commands
+# 5. Push to GitHub (triggers CI to build all 9 platform binaries)
+just push-release
+```
 
+At this point, wait for [GitHub Actions](https://github.com/jakeprem/merge_pdf/actions) to complete. All 9 platform builds must succeed.
+
+### Phase 2: After CI (Publishing)
+
+Once CI completes successfully, the precompiled binaries are attached to the GitHub release. Now generate checksums and publish.
+
+```bash
+# 6. Download checksums from the GitHub release
+#    (This verifies all 9 binaries are downloadable)
+just download-checksums
+
+# 7. Inspect the hex package contents
+just verify-package
+
+# 8. Publish to hex.pm
+just publish
+```
+
+### Justfile Commands Reference
+
+**Development:**
+- `just setup` - First-time setup, builds NIF from source
+- `just build` - Rebuild NIF from source
+- `just test` - Run tests
+
+**Pre-release:**
+- `just verify-local` - Clean build + tests (run before tagging)
+- `just bump-version X.Y.Z` - Update version numbers
+
+**Release:**
+- `just tag X.Y.Z` - Create git tag
+- `just push-release` - Push to GitHub (triggers CI)
+- `just download-checksums` - Download checksums after CI
+- `just verify-package` - Inspect hex package
+- `just publish` - Publish to hex.pm
+
+**Utilities:**
 - `just version` - Show current version
-- `just release X.Y.Z` - Interactive release guide
+- `just clean` - Remove build artifacts
 - `just --list` - List all commands
