@@ -209,3 +209,7 @@ version:
 clean:
     rm -rf _build deps merge_pdf-*
     rm -f checksum-*.exs
+
+# Verify a published hex package works (defaults to latest)
+verify-published version="":
+    elixir scripts/verify_published.exs {{version}}

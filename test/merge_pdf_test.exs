@@ -17,4 +17,20 @@ defmodule MergePdfTest do
       assert {:ok, <<1, 2, 3>>} = MergePdf.merge_binaries([<<1, 2, 3>>])
     end
   end
+
+  describe "merge_binaries/1 with real PDFs" do
+    test "merges two PDFs" do
+      pdf = File.read!("test/fixtures/test.pdf")
+      assert {:ok, merged} = MergePdf.merge_binaries([pdf, pdf])
+      assert <<"%PDF", _rest::binary>> = merged
+    end
+  end
+
+  describe "merge_paths/1 with real PDFs" do
+    test "merges two PDFs by path" do
+      path = "test/fixtures/test.pdf"
+      assert {:ok, merged} = MergePdf.merge_paths([path, path])
+      assert <<"%PDF", _rest::binary>> = merged
+    end
+  end
 end
