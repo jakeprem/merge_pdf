@@ -409,9 +409,9 @@ checksum = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94"
 
 [[package]]
 name = "lopdf"
-version = "0.36.0"
+version = "0.39.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59fa2559e99ba0f26a12458aabc754432c805bbb8cba516c427825a997af1fb7"
+checksum = "f560f57dfb9142a02d673e137622fd515d4231e51feb8b4af28d92647d83f35b"
 dependencies = [
  "aes",
  "bitflags",
@@ -420,6 +420,7 @@ dependencies = [
  "ecb",
  "encoding_rs",
  "flate2",
+ "getrandom",
  "indexmap",
  "itoa",
  "jiff",
@@ -434,6 +435,7 @@ dependencies = [
  "stringprep",
  "thiserror",
  "time",
+ "ttf-parser",
  "weezl",
 ]
 
@@ -464,7 +466,7 @@ dependencies = [
 
 [[package]]
 name = "mergepdf_native"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "lopdf",
  "rustler",
@@ -809,6 +811,12 @@ name = "tinyvec_macros"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
+
+[[package]]
+name = "ttf-parser"
+version = "0.25.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2df906b07856748fa3f6e0ad0cbaa047052d4a7dd609e231c4f72cee8c36f31"
 
 [[package]]
 name = "typenum"
